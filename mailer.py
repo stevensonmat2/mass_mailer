@@ -12,22 +12,25 @@ parser.add_argument("year", type=int)
 args = parser.parse_args()
 
 load_dotenv()
+PASSWORD = os.environ.get("PASSSWORD")
+TEST_SEND_EMAIL = os.environ.get("TEST_SEND_EMAIL")
+TEST_RECEIVE_EMAIL = os.environ.get("TEST_RECEIVE_EMAIL")
 
 volunteers = []
 date = datetime(args.year, args.month, args.day)
 weekday = date.strftime("%A")
 
 # creates SMTP session
-s = smtplib.SMTP('smtp.gmail.com', 587)
+s = smtplib.SMTP("smtp.gmail.com", 587)
 
 # start TLS for security
 s.starttls()
 
 # Authentication
-s.login(os.environ.get("TEST_SEND_EMAIL"), os.environ.get("PASSWORD"))
+s.login(TEST_SEND_EMAIL, PASSWORD)
 
-with open('ccm.csv') as csv_file:
-    csv_reader = csv.reader(csv_file, delimiter=',')
+with open("ccm.csv") as csv_file:
+    csv_reader = csv.reader(csv_file, delimiter=",")
     line_count = 0
     for row in csv_reader:
         name = row[1]
@@ -35,10 +38,12 @@ with open('ccm.csv') as csv_file:
         volunteers.append({"name": first_name, "email": row[0]})
         line_count += 1
 
-    print(f'Processed {line_count} lines.')
+    print(f"Processed {line_count} lines.")
 
 for volunteer in volunteers[:1]:
-    to = "To: {}\r\nSubject: {}\r\n\r\n".format(os.environ.get("TEST_RECEIVE_EMAIL"), f"free this {weekday}?")
+    to = "To: {}\r\nSubject: {}\r\n\r\n".format(
+        "matstev2@pdx.edu", f"free this {weekday}?"
+    )
     name = volunteer.get("name")
     email = volunteer.get("email")
     message = (
@@ -49,12 +54,10 @@ for volunteer in volunteers[:1]:
         f"{date.month}/{date.day}.\n\n"
         f"Hope to see you there!\n\n"
         f"Matt Stevenson"
-        )
+    )
     print(message)
 
-
-
-    s.sendmail(os.environ.get("TEST_SEND_EMAIL"), [os.environ.get("TEST_RECEIVE_EMAIL")], message)
+    s.sendmail(TEST_SEND_EMAIL, [TEST_RECEIVE_EMAIL], message)
 
 # terminating the session
 s.quit()
